@@ -1,9 +1,71 @@
 ---
-title: "Index"
+title: "What Makes a Book Popular?"
 format: html
+execute:
+  echo: false
+  message: false
+  warning: false
 ---
 
+```{r, message=FALSE, warning=FALSE}
+#| label: setup
+
+library(tidyverse)
+library(primer.data)
+library(brms)
+library(tidybayes)
+library(gtsummary)
+
+book_data <- read.csv("Books_Data_Clean.csv")
+
+book_data <- book_data |>
+  rename(book_name = Book.Name, book_average_rating = Book_average_rating,
+         publisher_revenue = publisher.revenue,  sales_rank = sales.rank,
+         units_sold = units.sold, publishing_year = Publishing.Year,
+         author_rating = Author_Rating, book_ratings_count = Book_ratings_count,
+         gross_sales = gross.sales, sale_price = sale.price, publisher = Publisher)
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+#| cache: true
+
+fit_model <- brm(formula = gross_sales ~ genre,
+             data = book_data,
+             family = gaussian(),
+             silent = 2,
+             refresh = 0,
+             seed = 9)
+
+
+ndata <- tibble(genre = c("genre fiction", "nonfiction"))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+fit_model |>
+  add_epred_draws(newdata = ndata) |>
+  ungroup() |>
+  select(genre, .epred) |>
+  ggplot(aes(x = .epred, fill = genre)) + 
+    geom_density(alpha = 0.5) + 
+    labs(
+      title = "Genre & Book Sales",
+      subtitle = "Fiction books sell more",
+      x = "Sales",
+      y = "Density",
+      fill = "Genre") + 
+      scale_fill_manual(
+        values = c("genre fiction" = "blue", "nonfiction" = "red"),
+        labels = c("Fiction", "Nonfiction")
+      )
+```
 
 
 
-We know a good book when we read one, but do the masses? What factors contribute to a book's popularity? My data is from Kaggle, a data science resource, consisting of books from the BC era until 2016 and their publishing details. I seek to understand what extraneous elements within the publishing sphere relate to book popularity. By modeling [clear this up once I clear up the model] the publishing year, an integer variable, more recent books had a higher chance of being in-demand. Author popularity contributes about 30% more [fix statistic when I fix the model] than genre to book sales.
+We have our own ideas of what makes a book good or bad: sometimes we'll find ourselves in the majority, sometimes in the minority. What factors contribute to a book's popularity? My data is from Kaggle, a data science resource, consisting of books from the BC era until 2016 and their publishing details. I seek to understand what elements within the publishing sphere relate to book popularity. By modeling the genre (fiction or nonfiction) as a linear function, I found that fiction books tend to be more more popular. Author popularity contributes about 30% more [fix statistic when I fix the model] than genre to book sales.
+
+
+

@@ -2,3 +2,8 @@
 title: "Sources"
 format: html
 ---
+## Data
+The data was taken from [this Kaggle Dataset](https://www.kaggle.com/datasets/thedevastator/books-sales-and-ratings/data). I also used Chat GPT for help in creating this website.
+
+## Kaggle
+Kaggle is a data science community with platforms for data science competitions, comphrehensive datasets, and tutorials and free AI/ML models for users to develop skills in data science.

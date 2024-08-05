@@ -1,4 +1,87 @@
 ---
 title: "Model"
 format: html
+execute:
+  echo: false
+  message: false
+  warning: false
 ---
+
+```{r}
+library(tidyverse)
+library(primer.data)
+library(brms)
+library(tidybayes)
+library(gtsummary)
+```
+
+I used a Gaussian Causal Model to calculate how genre, author rating, and published language relate to book sales. The model is based off this formula:
+
+$$
+y_i = \beta_{0} + \beta_{1} (chosen\ factor)_i + \epsilon_i
+$$
+Details about the model used—
+```{r}
+#| cache: TRUE
+#| echo: false
+#| message: false
+book_data <- read.csv("Books_Data_Clean.csv")
+
+book_data <- book_data |>
+  rename(book_name = Book.Name, book_average_rating = Book_average_rating,
+         publisher_revenue = publisher.revenue,  sales_rank = sales.rank,
+         units_sold = units.sold, publishing_year = Publishing.Year,
+         author_rating = Author_Rating, book_ratings_count = Book_ratings_count,
+         gross_sales = gross.sales, sale_price = sale.price, publisher = Publisher, author = Author)
+
+first_model <- book_data |>
+  drop_na() |>
+  select(gross_sales)
+
+fit_model <- brm(formula = gross_sales ~ genre,
+             data = book_data,
+             family = gaussian(),
+             silent = 2,
+             refresh = 0,
+             seed = 9)
+
+fit_model
+```
+
+
+The first graph—
+```{r}
+#| echo: false
+tbl_regression(fit_model, intercept = TRUE)
+```
+
+The second graph—
+```{r}
+#| cache: TRUE
+fit_model_2 <- brm(formula = gross_sales ~ author_rating,
+             data = book_data,
+             family = gaussian(),
+             silent = 2,
+             refresh = 0,
+             seed = 9)
+
+tbl_regression(fit_model_2, intercept = TRUE)
+```
+
+
+
+The third graph—
+
+```{r}
+#| cache: TRUE
+fit_model_3 <- brm(formula = gross_sales ~ language_code,
+             data = book_data,
+             family = gaussian(),
+             silent = 2,
+             refresh = 0,
+             seed = 9)
+
+tbl_regression(fit_model_3, intercept = TRUE)
+```
+
+(The three factors I picked were language_codeeng, language_codespa, and language_codefre, which correspond to English, Spanish, and French respectively.)

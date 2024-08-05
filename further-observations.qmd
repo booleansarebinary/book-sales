@@ -1,0 +1,102 @@
+---
+title: "Further Observations"
+format: html
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r, message=FALSE, warning=FALSE}
+#| label: setup
+
+library(tidyverse)
+library(primer.data)
+library(brms)
+library(tidybayes)
+library(gtsummary)
+
+book_data <- read.csv("Books_Data_Clean.csv")
+
+book_data <- book_data |>
+  rename(book_name = Book.Name, book_average_rating = Book_average_rating,
+         publisher_revenue = publisher.revenue,  sales_rank = sales.rank,
+         units_sold = units.sold, publishing_year = Publishing.Year,
+         author_rating = Author_Rating, book_ratings_count = Book_ratings_count,
+         gross_sales = gross.sales, sale_price = sale.price, publisher = Publisher, author = Author)
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+#| cache: true
+
+fit_model_2 <- brm(formula = gross_sales ~ author_rating,
+             data = book_data,
+             family = gaussian(),
+             silent = 2,
+             refresh = 0,
+             seed = 9)
+
+
+ndata <- tibble(author_rating = c("Famous", "Excellent", "Intermediate", "Novice"))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+fit_model_2 |>
+  add_epred_draws(newdata = ndata) |>
+  ungroup() |>
+  select(author_rating, .epred) |>
+  ggplot(aes(x = .epred, fill = author_rating)) + 
+    geom_density(alpha = 0.5) + 
+    labs(
+      title = "Author Rating & Book Sales",
+      subtitle = "Author popularity doesn't necessarily correlate with book sales: sometimes novice authors\nwill have a breakout book.",
+      x = "Sales",
+      y = "Density",
+      fill = "Author Rating") 
+```
+
+
+
+
+```{r, message=FALSE, warning=FALSE}
+#| cache: true
+
+fit_model_3 <- brm(formula = gross_sales ~ language_code,
+             data = book_data,
+             family = gaussian(),
+             silent = 2,
+             refresh = 0,
+             seed = 9)
+
+ndata <- tibble(language_code = c("eng", "spa", "fre"))
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+fit_model_3 |>
+  add_epred_draws(newdata = ndata) |>
+  ungroup() |>
+  select(language_code, .epred) |>
+  ggplot(aes(x = .epred, fill = language_code)) + 
+    geom_density(alpha = 0.7) + 
+    labs(
+      title = "Language & Book Sales",
+      subtitle = "English books sell more",
+      x = "Sales",
+      y = "Density",
+      fill = "Genre") + 
+      scale_fill_manual(
+        values = c("eng" = "grey", "fre" = "white", "spa" = "black"),
+        labels = c("English", "French", "Spanish")
+      )
+
+```
+
+
+
+
