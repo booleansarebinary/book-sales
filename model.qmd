@@ -28,6 +28,7 @@ Details about the model used—
 book_data <- read.csv("Books_Data_Clean.csv")
 
 book_data <- book_data |>
+  mutate(genre = recode(genre, "genre fiction" = "fiction")) |>
   rename(book_name = Book.Name, book_average_rating = Book_average_rating,
          publisher_revenue = publisher.revenue,  sales_rank = sales.rank,
          units_sold = units.sold, publishing_year = Publishing.Year,
@@ -44,8 +45,6 @@ fit_model <- brm(formula = gross_sales ~ genre,
              silent = 2,
              refresh = 0,
              seed = 9)
-
-fit_model
 ```
 
 

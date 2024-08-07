@@ -19,6 +19,7 @@ library(gtsummary)
 book_data <- read.csv("Books_Data_Clean.csv")
 
 book_data <- book_data |>
+  mutate((genre = recode(genre, "fiction" = "genre fiction"))) |>
   rename(book_name = Book.Name, book_average_rating = Book_average_rating,
          publisher_revenue = publisher.revenue,  sales_rank = sales.rank,
          units_sold = units.sold, publishing_year = Publishing.Year,
@@ -86,7 +87,7 @@ fit_model_3 |>
     geom_density(alpha = 0.7) + 
     labs(
       title = "Language & Book Sales",
-      subtitle = "English books sell more",
+      subtitle = "Books published in English sell more",
       x = "Sales",
       y = "Density",
       fill = "Genre") + 
